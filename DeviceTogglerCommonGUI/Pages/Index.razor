@@ -7,24 +7,31 @@
     <input class="form-control" @bind="tempGroupName" />
     <button class="btn btn-secondary form-control" @onclick='() => CreateGroup()'>Group</button>
     <button class="btn btn-secondary form-control" @onclick='() => Refresh()'>Refresh</button>
-    @foreach (var device in DeviceTogglerCore.GetUSBDevices().Select(x => x.Value).ToList())
+    <div>
+    @foreach (var device in DeviceTogglerCore.GetUSBDevices().Select(x => x.Value).OrderBy(x => x.Name).ToList())
     {
-        <div><input type="checkbox" checked=@tempDeviceGroup.Contains(device)
+        <div class="device-block"><input type="checkbox" checked=@tempDeviceGroup.Contains(device)
             @onchange="() => ToggleInTempList(device)" /><button class="btn btn-primary form-control"
-            @onclick='() => Toggle(device)'>@device.Name @device.Enabled</button></div>
+            @onclick='() => Toggle(device)'>@device.Name - @device.Enabled</button>    
+        <hr/>
+        </div>
     }
+    </div>
     <hr />
+    <div>
     @foreach (var deviceGroup in deviceGroups)
     { 
-        <div><button class="btn btn-primary form-control"
+        <div><button class="btn btn-primary"
             @onclick='() => ToggleGroup(deviceGroup.Key)'>@deviceGroup.Key @deviceGroup.Value.All(x =>
-            x.Enabled)</button>
+            x.Enabled)</button><br/>
             @foreach (var device in deviceGroup.Value)
             {
                 @device.Name<br />
             }
+        <hr/>
         </div>
     }
+    </div>
 </div>
 
 @code {
@@ -46,7 +53,7 @@
 
     private void CreateGroup()
     {
-        deviceGroups[tempGroupName] = tempDeviceGroup;
+        deviceGroups[tempGroupName] = tempDeviceGroup.ToList();
         tempDeviceGroup = new List<Device> { };
     }
 
@@ -60,6 +67,9 @@
 
     private void ToggleInTempList(Device device)
     {
-
+        if(tempDeviceGroup.Contains(device))
+            tempDeviceGroup.Remove(device);
+        else
+            tempDeviceGroup.Add(device);
     }
 }
