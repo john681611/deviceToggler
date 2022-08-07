@@ -1,0 +1,65 @@
+@page "/"
+@inherits LayoutComponentBase
+@using DeviceToggler.Lib
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<div class="page darkMode">
+    <input class="form-control" @bind="tempGroupName" />
+    <button class="btn btn-secondary form-control" @onclick='() => CreateGroup()'>Group</button>
+    <button class="btn btn-secondary form-control" @onclick='() => Refresh()'>Refresh</button>
+    @foreach (var device in DeviceTogglerCore.GetUSBDevices().Select(x => x.Value).ToList())
+    {
+        <div><input type="checkbox" checked=@tempDeviceGroup.Contains(device)
+            @onchange="() => ToggleInTempList(device)" /><button class="btn btn-primary form-control"
+            @onclick='() => Toggle(device)'>@device.Name @device.Enabled</button></div>
+    }
+    <hr />
+    @foreach (var deviceGroup in deviceGroups)
+    { 
+        <div><button class="btn btn-primary form-control"
+            @onclick='() => ToggleGroup(deviceGroup.Key)'>@deviceGroup.Key @deviceGroup.Value.All(x =>
+            x.Enabled)</button>
+            @foreach (var device in deviceGroup.Value)
+            {
+                @device.Name<br />
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+    private List<Device> tempDeviceGroup = new List<Device> { };
+    private string tempGroupName = "";
+    private Dictionary<string, List<Device>> deviceGroups = new Dictionary<string, List<Device>> { };
+
+    private void Refresh()
+    {
+        StateHasChanged();
+    }
+
+    private void Toggle(Device device)
+    {
+        device.Toggle();
+        StateHasChanged();
+    }
+
+    private void CreateGroup()
+    {
+        deviceGroups[tempGroupName] = tempDeviceGroup;
+        tempDeviceGroup = new List<Device> { };
+    }
+
+    private void ToggleGroup(string id)
+    {
+        foreach (var device in deviceGroups[id])
+        {
+            Toggle(device);
+        }
+    }
+
+    private void ToggleInTempList(Device device)
+    {
+
+    }
+}
