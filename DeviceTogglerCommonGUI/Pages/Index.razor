@@ -8,7 +8,7 @@
     <button class="btn btn-secondary form-control" @onclick='() => CreateGroup()'>Group</button>
     <button class="btn btn-secondary form-control" @onclick='() => Refresh()'>Refresh</button>
     <div>
-    @foreach (var device in DeviceTogglerCore.GetUSBDevices().Select(x => x.Value).OrderBy(x => x.Name).ToList())
+    @foreach (var device in devices.Select(x => x.Value).OrderBy(x => x.Name).ToList())
     {
         <div class="device-block"><input type="checkbox" checked=@tempDeviceGroup.Contains(device)
             @onchange="() => ToggleInTempList(device)" /><button class="btn btn-primary form-control"
@@ -39,9 +39,29 @@
     private List<Device> tempDeviceGroup = new List<Device> { };
     private string tempGroupName = "";
     private Dictionary<string, List<Device>> deviceGroups = new Dictionary<string, List<Device>> { };
+    
+    private Dictionary<string, Device> devices;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var savedGroups = await localStorage.GetItemAsync<Dictionary<string, List<string>>>("deviceGroups");
+        if(savedGroups == null) 
+            return;
+        foreach (var savedGroup in savedGroups)
+        {
+            deviceGroups.TryAdd(savedGroup.Key, savedGroup.Value.Select(x => devices[x]).ToList());
+        }
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        Refresh();
+    }
 
     private void Refresh()
     {
+        devices = DeviceTogglerCore.GetUSBDevices();
         StateHasChanged();
     }
 
@@ -51,10 +71,11 @@
         StateHasChanged();
     }
 
-    private void CreateGroup()
+    private async void CreateGroup()
     {
         deviceGroups[tempGroupName] = tempDeviceGroup.ToList();
         tempDeviceGroup = new List<Device> { };
+        await localStorage.SetItemAsync("deviceGroups", deviceGroups.Select(x => x).ToDictionary(x => x.Key, x => x.Value.Select(x => x.ID).ToList()));
     }
 
     private void ToggleGroup(string id)
