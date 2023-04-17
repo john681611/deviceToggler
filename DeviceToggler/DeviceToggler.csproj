@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>DeviceToggler.Lib</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   <ItemGroup>
-     <PackageReference Include="System.Management" Version="7.0.0" />
+     <PackageReference Include="System.Management" Version="7.0.1" />
   </ItemGroup>
 </Project>
